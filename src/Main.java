@@ -1,16 +1,14 @@
-import model.Board;
-import model.Space;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.stream.Stream;
-
-import static util.BoardTemplate.BOARD_TEMPLATE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import java.util.Scanner;
 import static java.util.stream.Collectors.toMap;
+import java.util.stream.Stream;
+import model.Board;
+import model.Space;
+import static util.BoardTemplate.BOARD_TEMPLATE;
 
 public class Main {
 
@@ -65,6 +63,10 @@ public class Main {
             spaces.add(new ArrayList<>());
             for (int j = 0; j < BOARD_LIMIT; j++) {
                 var positionConfig = positions.get("%s,%s".formatted(i, j));
+                if (isNull(positionConfig)) {
+                    System.out.printf("Configuração ausente para a posição [%s,%s]. Usando valores padrão.\n", i, j);
+                    positionConfig = "0,false"; // Valor padrão: número 0 e não fixo
+                }
                 var expected = Integer.parseInt(positionConfig.split(",")[0]);
                 var fixed = Boolean.parseBoolean(positionConfig.split(",")[1]);
                 var currentSpace = new Space(expected, fixed);
@@ -110,20 +112,26 @@ public class Main {
     }
 
     private static void showCurrentGame() {
-        if (isNull(board)){
-            System.out.println("O jogo ainda não foi iniciado iniciado");
+        if (isNull(board)) {
+            System.out.println("O jogo ainda não foi iniciado");
             return;
         }
 
-        var args = new Object[81];
+        // Array para armazenar os valores do tabuleiro
+        var args = new Object[BOARD_LIMIT * BOARD_LIMIT];
         var argPos = 0;
-        for (int i = 0; i < BOARD_LIMIT; i++) {
-            for (var col: board.getSpaces()){
-                args[argPos ++] = " " + ((isNull(col.get(i).getActual())) ? " " : col.get(i).getActual());
+
+        // Itera sobre as linhas e colunas do tabuleiro
+        for (var row : board.getSpaces()) {
+            for (var space : row) {
+                // Verifica se o espaço está vazio (null) e exibe " " caso esteja
+                args[argPos++] = (isNull(space.getActual())) ? " " : space.getActual();
             }
-        }
-        System.out.println("Seu jogo se encontra da seguinte forma");
-        System.out.printf((BOARD_TEMPLATE) + "\n", args);
+    }
+
+    // Exibe o tabuleiro formatado no terminal
+    System.out.println("Seu jogo se encontra da seguinte forma:");
+    System.out.printf(BOARD_TEMPLATE + "\n", args); 
     }
 
     private static void showGameStatus() {
